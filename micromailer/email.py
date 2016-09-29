@@ -48,5 +48,7 @@ class Email():
         if self.content_type is None or type(self.content_type) is not str or self.content_type not in self._allowed_content_types:
             raise InvalidEmailArgument("Content-type has to be plain/text or text/html")
 
+        return True
+
     def add_recipient(self, email, name=None):
         self.to.append((email, name))
