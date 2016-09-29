@@ -1,5 +1,6 @@
 from celery import task, Celery
 from celery.bin import worker
+import time
 
 celeryApp = Celery(__name__)
 celeryApp.config_from_object('celeryconfig')
@@ -14,7 +15,6 @@ if __name__ == '__main__':
     worker = worker.worker(app=celeryApp)
 
     options = {
-        'broker': 'redis://localhost',
         'loglevel': 'DEBUG',
         'traceback': True
     }
