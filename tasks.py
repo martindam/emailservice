@@ -1,9 +1,9 @@
 from celery import task, Celery
 from celery.bin import worker
-import time
 
 celeryApp = Celery(__name__)
 celeryApp.config_from_object('celeryconfig')
+
 
 @celeryApp.task(name="micromailer.sendEmail")
 def send_email(to, subjet, body, cc=None, bcc=None, content_type="plain/text"):
