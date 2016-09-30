@@ -68,7 +68,7 @@ class BackoffOnFailureMailServiceBase(MailServerBase):
         try:
             self._do_send(email)
             self._service_health = self._service_health * 0.9 + 0.1
-        except (ServerException, TooManyRequests):
+        except (ServerException, UnauthorizedRequest, TooManyRequests):
             self._service_health = self._service_health * 0.9
             self._last_error = self._get_time()
             logging.error(
