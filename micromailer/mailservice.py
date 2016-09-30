@@ -7,21 +7,26 @@ from email import Email
 class MailServiceException(Exception):
     pass
 
+
 # Request was malformed
 class BadRequest(MailServiceException):
     pass
+
 
 # Not authorized to issue request
 class UnauthorizedRequest(MailServiceException):
     pass
 
+
 # The service had an internal error
 class ServerException(MailServiceException):
     pass
 
+
 # Request limit reached on server
 class TooManyRequests(MailServiceException):
     pass
+
 
 # Base class for mail service implementations.
 class MailServerBase(object):
@@ -63,15 +68,15 @@ class BackoffOnFailureMailServiceBase(MailServerBase):
         try:
             self._do_send(email)
             self._service_health = self._service_health * 0.9 + 0.1
-        except (ServerException, TooManyRequests) as e:
+        except (ServerException, TooManyRequests):
             self._service_health = self._service_health * 0.9
-            self._last_error = time.time()
+            self._last_error = self._get_time()
             logging.error(
                 "Server exception. Decreasing service score to %s" % self.get_service_score())
             raise
 
     def get_service_score(self):
-        time_since_last_error = time.time() - self._last_error
+        time_since_last_error = self._get_time() - self._last_error
 
         # Linear weight over 5 min.
         # Right after a failure, the service health score is weighted 100%, at
@@ -84,3 +89,6 @@ class BackoffOnFailureMailServiceBase(MailServerBase):
         # normal
         time_weight = min(1, time_since_last_error / 300)
         return min(100, max(0, self._base_score * (1 * time_weight + self._service_health * (1 - time_weight))))
+
+    def _get_time(self):
+        return time.time()

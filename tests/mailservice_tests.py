@@ -50,9 +50,8 @@ class BackoffOnFailureMailServiceBaseTestSuite(unittest.TestCase):
         self.assertLess(service.get_service_score(), 50)
 
     def test_base_score_on_multiple_failure(self):
-        service = MockFailingMailService(fail_pattern=[ServerException(),
-            ServerException(), ServerException(), ServerException(), ServerException(), 
-            None, None, None, None, None])
+        fail_pattern = 5 * [ServerException()] + 5 * [None]
+        service = MockFailingMailService(fail_pattern=fail_pattern)
         last_score = service.get_service_score()
 
         # 5 failing requests, the score will decrease
