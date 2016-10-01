@@ -42,6 +42,7 @@ class MailServerBase(object):
     # Send the email using the service. Raises an exception in case of error
     def send(self, email):
         assert isinstance(email, Email)
+        email.is_valid()
         return self._do_send(email)
 
     # Actually send the email and raise an exception on error
@@ -70,6 +71,7 @@ class BackoffOnFailureMailServiceBase(MailServerBase):
 
     def send(self, email):
         assert isinstance(email, Email)
+        email.is_valid()
         try:
             result = self._do_send(email)
             self._service_health = self._service_health * 0.9 + 0.1
