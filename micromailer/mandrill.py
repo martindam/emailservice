@@ -3,13 +3,11 @@ import requests
 import logging
 import mailservice
 
-from models import Email
-
 
 class MandrillMailService(mailservice.BackoffOnFailureMailServiceBase):
 
-    def __init__(self, api_key):
-        super(MandrillMailService, self).__init__(50)
+    def __init__(self, api_key, service_score=50):
+        super(MandrillMailService, self).__init__(service_score)
         self._api_key = api_key
         self._url = "https://mandrillapp.com/api/1.0/messages/send.json"
 

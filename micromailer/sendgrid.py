@@ -16,8 +16,8 @@ class BearerAuth(requests.auth.AuthBase):
 
 class SendGridMailService(mailservice.BackoffOnFailureMailServiceBase):
 
-    def __init__(self, api_key):
-        super(SendGridMailService, self).__init__(50)
+    def __init__(self, api_key, service_score=50):
+        super(SendGridMailService, self).__init__(service_score)
         self._auth = BearerAuth(api_key)
         self._url = "https://api.sendgrid.com/v3/mail/send"
 
