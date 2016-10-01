@@ -12,14 +12,15 @@ class InvalidEmailArgument(Exception):
 
 class Email():
 
-    def __init__(self, to, sender, subject, content, content_type="plain/text", to_name=None):
+    def __init__(self, to, sender, subject, content, content_type="text/plain", to_name=None, sender_name=None):
         self.to = [(to, to_name)]
         self.sender = sender
+        self.sender_name = sender_name
         self.subject = subject
         self.content = content
         self.content_type = content_type
 
-        self._allowed_content_types = ["plain/text", "text/html"]
+        self._allowed_content_types = ["text/plain", "text/html"]
 
         # Make sure the arguments are valid, if not raise an exception
         self.is_valid()

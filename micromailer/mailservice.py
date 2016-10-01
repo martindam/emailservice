@@ -1,7 +1,7 @@
 import logging
 import time
 
-from email import Email
+from models import Email
 
 
 class MailServiceException(Exception):
@@ -28,6 +28,11 @@ class TooManyRequests(MailServiceException):
     pass
 
 
+# Network error like DNS, unable to connect etc.
+class NetworkException(MailServiceException):
+    pass
+
+
 # Base class for mail service implementations.
 class MailServerBase(object):
 
@@ -37,7 +42,7 @@ class MailServerBase(object):
     # Send the email using the service. Raises an exception in case of error
     def send(self, email):
         assert isinstance(email, Email)
-        self._do_send(email)
+        return self._do_send(email)
 
     # Actually send the email and raise an exception on error
     def _do_send(self, email):
@@ -66,8 +71,9 @@ class BackoffOnFailureMailServiceBase(MailServerBase):
     def send(self, email):
         assert isinstance(email, Email)
         try:
-            self._do_send(email)
+            result = self._do_send(email)
             self._service_health = self._service_health * 0.9 + 0.1
+            return result
         except (ServerException, UnauthorizedRequest, TooManyRequests):
             self._service_health = self._service_health * 0.9
             self._last_error = self._get_time()

@@ -2,7 +2,7 @@ import context
 import unittest
 import time
 
-from micromailer.email import Email
+from micromailer.models import Email
 from micromailer.mailservice import BackoffOnFailureMailServiceBase, ServerException
 
 
