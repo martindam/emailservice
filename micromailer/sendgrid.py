@@ -35,24 +35,33 @@ class SendGridMailService(mailservice.BackoffOnFailureMailServiceBase):
             ]
         }
         logging.debug("Sending email via sendgrid: %s" % json.dumps(body))
-        print json.dumps(body)
+
         # Perform HTTP request
         try:
-            req = requests.post(self._url, json=body, auth=self._auth)
+            response = requests.post(self._url, json=body, auth=self._auth)
 
-            if req.status_code >= 200 and req.status_code <= 299:
-                return req.text
-            elif req.status_code == 419:
-                raise mailservice.TooManyRequests(req.text)
-            elif req.status_code == 401:
-                raise mailservice.UnauthorizedRequest(req.text)
-            elif req.status_code >= 400 and req.status_code <= 499:
-                raise mailservice.BadRequest(req.text)
-            elif req.status_code >= 500 and req.status_code <= 599:
-                raise mailservice.ServerException(req.text)
+            if response.status_code >= 200 and response.status_code <= 299:
+                output = self._build_success_response(msg)
+                output['_response'] = response.text
+                output['_service'] = 'sendgrid'
+                return output
+            elif response.status_code == 419:
+                raise mailservice.TooManyRequests(response.text)
+            elif response.status_code == 401:
+                raise mailservice.UnauthorizedRequest(response.text)
+            elif response.status_code >= 400 and response.status_code <= 499:
+                raise mailservice.BadRequest(response.text)
+            elif response.status_code >= 500 and response.status_code <= 599:
+                raise mailservice.ServerException(response.text)
             else:
-                raise mailservice.MailServiceException("Unexpected status code: %d" % req.status_code)
+                raise mailservice.MailServiceException("Unexpected status code: %d" % response.status_code)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             raise mailservice.NetworkException(e.message)
         except requests.exceptions.RequestException as e:
             raise mailservice.ServerException(e.message)
+
+    def _build_success_response(self, msg):
+        output = {}
+        for email in msg.to:
+            output[email[0]] = True
+        return output
