@@ -39,11 +39,11 @@ class Email():
             raise InvalidEmailArgument('Sender email is invalid')
 
         # Validate subject
-        if self.subject is None or type(self.subject) is not str:
+        if self.subject is None or type(self.subject) not in [str, unicode]:
             raise InvalidEmailArgument("Subject has to be a string")
 
         # Validate content
-        if self.content is None or type(self.content) is not str:
+        if self.content is None or type(self.content) not in [str, unicode]:
             raise InvalidEmailArgument("Content has to be a string")
 
         if self.content_type is None or type(self.content_type) is not str or self.content_type not in self._allowed_content_types:

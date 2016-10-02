@@ -1,5 +1,6 @@
 import logging
 import time
+from threading import RLock
 
 from models import Email
 
@@ -56,6 +57,9 @@ class MailServerBase(object):
     def get_service_score(self):
         return 50
 
+    def get_name(self):
+        return "Unknown"
+
 
 # Simple service base that calculates the service score based on a moving
 # average of the service health where the health is defined as 1 if email
@@ -68,35 +72,44 @@ class BackoffOnFailureMailServiceBase(MailServerBase):
         self._base_score = base_score
         self._service_health = 1.0
         self._last_error = 0
+        self._lock = RLock()
 
     def send(self, email):
         assert isinstance(email, Email)
         email.is_valid()
         try:
             result = self._do_send(email)
-            self._service_health = self._service_health * 0.9 + 0.1
+            self._update_service_health(True)
             return result
         except (ServerException, UnauthorizedRequest, TooManyRequests):
-            self._service_health = self._service_health * 0.9
-            self._last_error = self._get_time()
+            self._update_service_health(False)
             logging.error(
                 "Server exception. Decreasing service score to %s" % self.get_service_score())
             raise
 
-    def get_service_score(self):
-        time_since_last_error = self._get_time() - self._last_error
+    def _update_service_health(self, success):
+        with self._lock:
+            if success:
+                self._service_health = self._service_health * 0.9 + 0.1
+            else:
+                self._service_health = self._service_health * 0.9
+                self._last_error = self._get_time()
 
-        # Linear weight over 5 min.
-        # Right after a failure, the service health score is weighted 100%, at
-        # 150 sec it is 50%/50% for the base score and health and after 300 sec
-        # the base score is used 100%
-        # This allows to keep degrading the service health in the presence of
-        # failures until it is not longer being used as other services are
-        # prefered. When the service recovers, the score will increase as no
-        # new errors are observed and the service health will go back up to
-        # normal
-        time_weight = min(1, time_since_last_error / 300)
-        return min(100, max(0, self._base_score * (1 * time_weight + self._service_health * (1 - time_weight))))
+    def get_service_score(self):
+        with self._lock:
+            time_since_last_error = self._get_time() - self._last_error
+
+            # Linear weight over 5 min.
+            # Right after a failure, the service health score is weighted 100%, at
+            # 150 sec it is 50%/50% for the base score and health and after 300 sec
+            # the base score is used 100%
+            # This allows to keep degrading the service health in the presence of
+            # failures until it is not longer being used as other services are
+            # prefered. When the service recovers, the score will increase as no
+            # new errors are observed and the service health will go back up to
+            # normal
+            time_weight = min(1, time_since_last_error / 300)
+            return min(100, max(0, self._base_score * (1 * time_weight + self._service_health * (1 - time_weight))))
 
     def _get_time(self):
         return time.time()

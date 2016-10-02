@@ -43,7 +43,7 @@ class SendGridMailService(mailservice.BackoffOnFailureMailServiceBase):
             if response.status_code >= 200 and response.status_code <= 299:
                 output = self._build_success_response(msg)
                 output['_response'] = response.text
-                output['_service'] = 'sendgrid'
+                output['_service'] = self.get_name()
                 return output
             elif response.status_code == 419:
                 raise mailservice.TooManyRequests(response.text)
@@ -65,3 +65,6 @@ class SendGridMailService(mailservice.BackoffOnFailureMailServiceBase):
         for email in msg.to:
             output[email[0]] = True
         return output
+
+    def get_name(self):
+        return "sendgrid"

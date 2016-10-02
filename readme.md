@@ -19,3 +19,9 @@ When a service failure is detected (server, authentication or too many request e
 [Simulations](tests/backoff_all_simulate.py) of this algorighm and the selection of the service with the highest score reveals significant error rate reduction under various service degradation patterns. See figure below. Note: Failures in this context is the failure to deliver an email to a single service, however the dispatcher falls back to the secondary service in this case and still delivers the email.
 
 ![Service score selection algorithm simulation](docs/backoff_alg_withalternative.png)
+
+
+## Improvements
+The following improvements should/could be made:
+ - Do not use Pickle as serialization for the task queue. Pickle is going to be deprecated in Celery 3.2 due to security concerns so switch to use JSON or similar on the task queue
+ 

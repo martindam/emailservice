@@ -42,7 +42,10 @@ class MandrillMailService(mailservice.BackoffOnFailureMailServiceBase):
             raise mailservice.ServerException(e.message)
 
     def _process_response(self, json_resp):
-        output = {'_response': json_resp, '_service': 'mandrill'}
+        output = {'_response': json_resp, '_service': self.get_name()}
         for entry in json_resp:
             output[entry['email']] = entry['status'] in ['sent', 'queued', 'scheduled']
         return output
+
+    def get_name(self):
+        return "mandrill"
