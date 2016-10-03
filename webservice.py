@@ -2,6 +2,7 @@ from flask import Flask, request, Response
 from celery.result import AsyncResult
 from celery.exceptions import TimeoutError
 import json
+import logging
 
 from tasks import send_email
 from micromailer.models import Email
@@ -20,7 +21,7 @@ def index():
 Add en email to be sent by the system. This endpoints emits the task definition
 so a Celery worker can deliver the email. A HTTP/200 indicates the task was
 successfully queued in Celery, NOT the delivery of the email.
-Returns the taskId (or emailId) that can be used to query for the status of the task
+Returns the emailid that can be used to query for the status of the email
 on the /email/<emailId> endpoint
 '''
 @app.route('/email', methods=['POST'])
@@ -36,8 +37,9 @@ def add_email():
                       request.form['subject'], request.form['content'],
                       sender_name=MAILSERVICE_SENDER_NAME)
 
-    task_id = send_email.apply_async([email]).id
-    return Response(json.dumps({'taskId': task_id}), mimetype='application/json')
+    email_id = send_email.apply_async([email]).id
+    logging.debug("Enqueing email to %s with emailId=%s" % (email.to[0][0], email_id))
+    return Response(json.dumps({'emailId': email_id}), mimetype='application/json')
 
 
 '''

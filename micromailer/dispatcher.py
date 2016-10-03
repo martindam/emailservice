@@ -1,7 +1,7 @@
 from threading import RLock
 import logging
 
-from mailservice import MailServerBase
+from mailservice import MailServiceBase
 
 
 class MailDispatcher():
@@ -12,7 +12,8 @@ class MailDispatcher():
 
     def add_service(self, service):
         with self._lock:
-            assert isinstance(service, MailServerBase)
+            if not isinstance(service, MailServiceBase):
+                raise Exception("Unable to add service of type %s" % type(service))
             self._services.append(service)
 
     def send(self, email):

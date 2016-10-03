@@ -35,7 +35,7 @@ class NetworkException(MailServiceException):
 
 
 # Base class for mail service implementations.
-class MailServerBase(object):
+class MailServiceBase(object):
 
     def __init__(self):
         pass
@@ -65,14 +65,19 @@ class MailServerBase(object):
 # average of the service health where the health is defined as 1 if email
 # was sent successfully and 0 if not. The time since last error is used as
 # a linear weight between base score and service health score
-class BackoffOnFailureMailServiceBase(MailServerBase):
+class BackoffOnFailureMailServiceBase(MailServiceBase):
 
     def __init__(self, base_score=50):
         super(BackoffOnFailureMailServiceBase, self).__init__()
         self._base_score = base_score
-        self._service_health = 1.0
-        self._last_error = 0
         self._lock = RLock()
+        self.reset_score()
+        self._logger = logging.getLogger("mailservice")
+
+    def reset_score(self):
+        with self._lock:
+            self._service_health = 1
+            self._last_error = 0
 
     def send(self, email):
         assert isinstance(email, Email)
@@ -83,7 +88,7 @@ class BackoffOnFailureMailServiceBase(MailServerBase):
             return result
         except (ServerException, UnauthorizedRequest, TooManyRequests):
             self._update_service_health(False)
-            logging.error(
+            self._logger.error(
                 "Server exception. Decreasing service score to %s" % self.get_service_score())
             raise
 
