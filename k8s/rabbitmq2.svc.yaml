@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    component: rabbitmq
+  name: rmq1-2
+  namespace: default
+spec:
+  ports:
+  - name: rabbitmq
+    port: 5672
+    protocol: TCP
+    targetPort: 5672
+  - name: epmd
+    port: 4369
+    protocol: TCP
+    targetPort: 4369
+  - name: clustering
+    port: 25672
+    protocol: TCP
+    targetPort: 25672
+  selector:
+    app: rmq1-2
+    cluster: rabbitmq1
+  type: ClusterIP

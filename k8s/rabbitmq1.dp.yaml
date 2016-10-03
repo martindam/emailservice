@@ -1,0 +1,42 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: rmq1-1-dp
+  labels:
+    app: rmq1-1
+    cluster: rabbitmq1
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: rmq1-1
+      labels:
+        app: rmq1-1
+        cluster: rabbitmq1
+    spec:
+      containers:
+      - name: rabbitmq
+        image: rabbitmq:3-management
+        ports:
+        - containerPort: 5672
+          name: rabbitmq
+        - containerPort: 15672
+          name: admin-port
+        - containerPort: 4369
+          name: epmd
+        - containerPort: 25672
+          name: dist-port
+        env:
+        - name: RABBITMQ_ERLANG_COOKIE
+          value: secretcookie
+        - name: RABBITMQ_NODENAME
+          value: rabbit@rmq1-1
+        volumeMounts:
+        - mountPath: /var/lib/rabbitmq
+          name: varlibrabbitmq
+          readOnly: false
+      volumes:
+      - name: varlibrabbitmq
+        gcePersistentDisk:
+          pdName: rmq1-1
+          readOnly: false

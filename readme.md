@@ -24,4 +24,10 @@ When a service failure is detected (server, authentication or too many request e
 ## Improvements
 The following improvements should/could be made:
  - Do not use Pickle as serialization for the task queue. Pickle is going to be deprecated in Celery 3.2 due to security concerns so switch to use JSON or similar on the task queue
+ - Improve the initial cluster bootstrapping of RabbitMQ so it does not require manual steps
  
+ ## Deployment
+ This repository includes the deployment specification for running on Kubernetes on Google Cloud Platform. Besides deploying the web service and workers, this specification also deploys a 2 node RabbitMQ cluster with persistent disk and a 2 node redis in-memory only cluster. The clusters are deployed with minimum configuration for demonstration purposes and may require tuning for production workload (e.g. TLS and virtual hosts).
+
+ **RabbitMQ**
+ When setting up RabbitMQ initially some steps needs to be taken to create the cluster. When both the nodes are up, do a `rabbitmqctl join_cluster <other node>` on one node to create the cluster. The default user `guest` should be removed and replaced with an administrator and emailservice user.
