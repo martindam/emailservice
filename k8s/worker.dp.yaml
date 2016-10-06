@@ -20,6 +20,7 @@ spec:
       - name: app
         image: gcr.io/emailservice-144105/emailservice:0.1.0
         command: ["celery", "worker", "-A", "tasks", "-l", "DEBUG"]
+        imagePullPolicy: Always
         env:
         - name: BROKER_URL
           valueFrom:
