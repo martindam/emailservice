@@ -1,0 +1,37 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: emailservice-flower-dp
+  labels:
+    app: emailservice-flower
+    tier: monitoring
+    service: emailservice
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: emailservice-flower
+      labels:
+        app: emailservice-flower
+        tier: monitoring
+        service: emailservice
+    spec:
+      containers:
+      - name: app
+        image: gcr.io/emailservice-144105/emailservice:0.1.0
+        command: ["celery", "flower", "-A", "tasks", "--port=5555"]
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5555
+          name: http
+        env:
+        - name: BROKER_URL
+          valueFrom:
+            configMapKeyRef:
+              name: emailservice-config
+              key: celery-broker-url
+        - name: CELERY_RESULT_BACKEND
+          valueFrom:
+            configMapKeyRef:
+              name: emailservice-config
+              key: celery-result-backend
