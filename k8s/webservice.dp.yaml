@@ -1,0 +1,38 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: emailservice-web-dp
+  labels:
+    app: emailservice-web
+    tier: frontend
+    service: emailservice
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: emailservice-web
+      labels:
+        app: emailservice-web
+        tier: frontend
+        service: emailservice
+    spec:
+      containers:
+      - name: app
+        image: gcr.io/emailservice-144105/emailservice:0.1.0
+        command: ["/usr/local/bin/python", "webservice.py"]
+        env:
+        - name: BROKER_URL
+          valueFrom:
+            configMapKeyRef:
+              name: emailservice-config
+              key: celery-broker-url
+        - name: CELERY_RESULT_BACKEND
+          valueFrom:
+            configMapKeyRef:
+              name: emailservice-config
+              key: celery-result-backend
+      - name: nginx
+        image: gcr.io/emailservice-144105/nginx:0.1.0
+        ports:
+        - containerPort: 80
+          name: http

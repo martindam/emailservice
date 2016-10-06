@@ -27,7 +27,25 @@ The following improvements should/could be made:
  - Improve the initial cluster bootstrapping of RabbitMQ so it does not require manual steps
  
  ## Deployment
- This repository includes the deployment specification for running on Kubernetes on Google Cloud Platform. Besides deploying the web service and workers, this specification also deploys a 2 node RabbitMQ cluster with persistent disk and a 2 node redis in-memory only cluster. The clusters are deployed with minimum configuration for demonstration purposes and may require tuning for production workload (e.g. TLS and virtual hosts).
+ This repository includes the deployment specification for running on Kubernetes on Google Cloud Platform. Besides deploying the web service and workers, this specification also deploys a 2 node RabbitMQ cluster with persistent disk and a 1 node redis in-memory only cluster. The clusters are deployed with minimum configuration for demonstration purposes and may require tuning for production workload (e.g. TLS and virtual hosts).
 
  **RabbitMQ**
  When setting up RabbitMQ initially some steps needs to be taken to create the cluster. When both the nodes are up, do a `rabbitmqctl join_cluster <other node>` on one node to create the cluster. The default user `guest` should be removed and replaced with an administrator and emailservice user.
+
+**Configs**
+In order to deploy on Kubernetes, a configmap will need to be manually deployed with various configurations. See example below
+```
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: emailservice-config
+  namespace: default
+data:
+  sendgrid-api-key: 
+  mandrill-api-key: 
+  celery-broker-url: amqp://guest:guest@rmq1-1:5672/
+  celery-result-backend: redis://redis-master/
+```
+
+**Nginx**
+The webservice has nginx running in front of the Python flask application. This has various advantages like security (nginx is argurably a better implementation of HTTP than Flask), SSL management if needed, offloading of static files, authentication and so on.

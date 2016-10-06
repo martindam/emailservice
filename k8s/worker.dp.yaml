@@ -1,0 +1,43 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: emailservice-worker-dp
+  labels:
+    app: emailservice-worker
+    tier: backend
+    service: emailservice
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: emailservice-worker
+      labels:
+        app: emailservice-worker
+        tier: backend
+        service: emailservice
+    spec:
+      containers:
+      - name: app
+        image: gcr.io/emailservice-144105/emailservice:0.1.0
+        command: ["celery", "worker", "-A", "tasks", "-l", "DEBUG"]
+        env:
+        - name: BROKER_URL
+          valueFrom:
+            configMapKeyRef:
+              name: emailservice-config
+              key: celery-broker-url
+        - name: CELERY_RESULT_BACKEND
+          valueFrom:
+            configMapKeyRef:
+              name: emailservice-config
+              key: celery-result-backend
+        - name: SENDGRID_API_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: emailservice-config
+              key: sendgrid-api-key
+        - name: MANDRILL_API_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: emailservice-config
+              key: mandrill-api-key
