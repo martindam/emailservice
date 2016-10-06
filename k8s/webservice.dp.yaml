@@ -20,6 +20,7 @@ spec:
       - name: app
         image: gcr.io/emailservice-144105/emailservice:0.1.0
         command: ["/usr/local/bin/python", "webservice.py"]
+        imagePullPolicy: Always
         env:
         - name: BROKER_URL
           valueFrom:
@@ -33,6 +34,7 @@ spec:
               key: celery-result-backend
       - name: nginx
         image: gcr.io/emailservice-144105/nginx:0.1.0
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
           name: http
