@@ -1,0 +1,128 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Email service as a service</title>
+        <link href='http://fonts.googleapis.com/css?family=Nunito:400,300' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" href="/static/style.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <script>
+        function checkEmailStatus(emailid, stopAt) {
+            $.ajax({
+                type: 'GET',
+                url: '/email/' + emailid,
+                dataType: 'json',
+                encode: true
+            }).done(function(data) {
+                console.log(data)
+                
+                if (data.status == "success") {
+                    $("#status").removeClass("hasError")
+                    $("#status").text("Sent")
+                } else if (data.status == "notfound" && stopAt > new Date().getTime()) {
+                    setTimeout(checkEmailStatus(emailId, stopAt), 1000)
+                } else {
+                    $("#status").addClass("hasError")
+                    $("#status").text(data.status)
+                }                
+            })
+        }
+
+        $(document).ready(function(){
+            $('form').submit(function(event) {
+
+                var formData = {
+                    'to': $('input[name=to]').val(),
+                    'to_name': $('input[name=to_name]').val(),
+                    'subject': $('input[name=subject]').val(),
+                    'content': $('textarea[name=content]').val()
+                };
+                console.log(formData)
+                $.ajax({
+                    type: 'POST',
+                    url: '/email',
+                    data: formData,
+                    dataType: 'json',
+                    encode: true,
+                    beforeSend: function(xhr) {
+                        $("#emailId").text("Loading...")
+                        $("#status").text("")
+                    }
+                }).done(function(data) {
+                    console.log(data)
+                    $("#emailId").text(data.emailId)
+                    $("#status").text(data.status)
+                    $("#status").removeClass("hasError")
+
+                    checkEmailStatus(data.emailId, new Date().getTime() + 30000)
+                }).fail(function(data) {
+                    console.log(data)
+                    $("#emailId").text("")
+                    $("#status").text(data.responseJSON.error)
+                    $("#status").addClass("hasError")
+                });
+
+                $("form").hide()
+                $("#info-box").show()
+
+                // Do not submit form normally
+                event.preventDefault();
+            });
+            $("#sendAnother").click(function() {
+
+                $('input[name=to]').val("")
+                $('input[name=to_name]').val("")
+                $('input[name=subject]').val("")
+                $('textarea[name=content]').val("")
+
+                $("form").show()
+                $("#info-box").hide()
+            });
+            $("#back").click(function() {
+                $("form").show()
+                $("#info-box").hide()
+            });
+        });
+        </script>
+    </head>
+    <body>
+
+        <div class="box">
+            <h1>Email service</h1>
+
+            <form action="/email" method="post">
+
+                <fieldset>
+                <legend><span class="number">1</span>Recipient</legend>
+
+                <label for="mail">Email:</label>
+                <input type="email" id="mail" name="to">
+
+                <label for="name">Name: <span class="comment">optional</span></label>
+                <input type="text" id="name" name="to_name">
+
+                </fieldset>
+
+                <fieldset>
+                <legend><span class="number">2</span>Email</legend>
+
+                <label for="name">Subject:</label>
+                <input type="text" id="subject" name="subject">
+
+                <label for="content">Email content:<span class="comment"><a href="http://daringfireball.net/projects/markdown/" target="_blank">markdown enabled</a></span></label>
+                <textarea id="content" name="content" style="height: 150px;"></textarea>
+                </fieldset>
+
+                <button type="submit">Send</button>
+            </form>
+
+            <div id="info-box" style="display: none;">
+                <label>EmailId: <span id="emailId">N/A</span></label> 
+
+                <label>Status: <span id="status">N/A</span></label> 
+
+                <center><a href="#" id="back">Back</a> | <a href="#" id="sendAnother">Send another</a></center>
+            </div>
+        </div>
+    </body>
+</html>

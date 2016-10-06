@@ -1,5 +1,10 @@
 # Micro email service
 
+This project implements a simple HTTP email service that delivers the emails via multiple email-as-a-service backends based on a scoring algorithm described below. 
+
+A very simple web interface is provided to make it easy to test the service, however the main usecase of this service is using the HTTP endpoint directly from another application.
+
+## Architecture
 
 
 ## Installation

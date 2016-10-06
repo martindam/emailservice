@@ -32,19 +32,19 @@ class Email():
 
         for email in self.to:
             if email[0] is None or not email_pattern.match(email[0]):
-                raise InvalidEmailArgument("Recipient %s is invalid" % email[0])
+                raise InvalidEmailArgument("Recipient '%s' is invalid" % email[0])
 
         # Validate sender email
         if self.sender is None or not email_pattern.match(self.sender):
             raise InvalidEmailArgument('Sender email is invalid')
 
         # Validate subject
-        if self.subject is None or type(self.subject) not in [str, unicode]:
-            raise InvalidEmailArgument("Subject has to be a string")
+        if self.subject is None or type(self.subject) not in [str, unicode] or len(self.subject) == 0:
+            raise InvalidEmailArgument("Subject has to be a non-empty string")
 
         # Validate content
-        if self.content is None or type(self.content) not in [str, unicode]:
-            raise InvalidEmailArgument("Content has to be a string")
+        if self.content is None or type(self.content) not in [str, unicode] or len(self.content) == 0:
+            raise InvalidEmailArgument("Content has to be a non-empty string")
 
         if self.content_type is None or type(self.content_type) is not str or self.content_type not in self._allowed_content_types:
             raise InvalidEmailArgument("Content-type has to be plain/text or text/html")

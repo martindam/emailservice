@@ -3,9 +3,10 @@ from celery.result import AsyncResult
 from celery.exceptions import TimeoutError
 import json
 import logging
+import markdown
 
 from tasks import send_email
-from micromailer.models import Email
+from micromailer.models import Email, InvalidEmailArgument
 
 from emailservice_config import MAILSERVICE_SENDER_EMAIL, MAILSERVICE_SENDER_NAME
 
@@ -28,18 +29,21 @@ on the /email/<emailId> endpoint
 def add_email():
     email = None
     if request.is_json:
-        json_body = request.get_json()
-        email = Email(json_body['to'], MAILSERVICE_SENDER_EMAIL,
-                      json_body['subject'], json_body['content'],
-                      sender_name=MAILSERVICE_SENDER_NAME)
+        fields = request.get_json()
     else:
-        email = Email(request.form['to'], MAILSERVICE_SENDER_EMAIL,
-                      request.form['subject'], request.form['content'],
-                      sender_name=MAILSERVICE_SENDER_NAME)
+        fields = request.form
+
+    try:
+        email = Email(fields['to'], MAILSERVICE_SENDER_EMAIL,
+                      fields['subject'], markdown.markdown(fields['content']),
+                      content_type="text/html", sender_name=MAILSERVICE_SENDER_NAME,
+                      to_name=fields.get('to_name', None))
+    except InvalidEmailArgument as e:
+        return Response(json.dumps({"status": "failed", "error": e.message}), status=400)
 
     email_id = send_email.apply_async([email]).id
     logging.debug("Enqueing email to %s with emailId=%s" % (email.to[0][0], email_id))
-    return Response(json.dumps({'emailId': email_id}), mimetype='application/json')
+    return Response(json.dumps({"status": "queued", "emailId": email_id}), mimetype='application/json')
 
 
 '''
