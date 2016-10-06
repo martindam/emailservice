@@ -1,6 +1,6 @@
 # Micro email service
 
-This project implements a simple HTTP email service that delivers the emails via multiple email-as-a-service backends based on a scoring algorithm described below. This project is done in response to the Uber code challenge and is for the backend track. Sendgrid and Mandrill is currently being used.
+This project implements a simple HTTP email service that delivers emails via multiple email-as-a-service backends based on a scoring algorithm described below. This project is done in response to the Uber code challenge and is for the backend track. Sendgrid and Mandrill is currently being used.
 
 The service provides a simple interface to send a single email at a time. A more advanced interface could be added that allows for managing lists of receivers, bulk transmission, delivery/opening status and so on. However, these features was deemed out of scope for this project.
 
@@ -19,7 +19,7 @@ Emails are sent asynchronously. When an email is enqueued via the `/email` endpo
 [Link to deployed service](http://emailservice.martindam.dk)
 
 ## Architecture
-The system is built in Python and split into a web frontend and a backend of workers responsible for sending the emails. [Celery](http://www.celeryproject.org/) is used as a distributed task queue to send task and results between the frontend and backend. This architecture allows to scale the system as the number of workers can be scaled independent of the frontend and vice versa. RabbitMQ is used as the task queue as it provides good delivery guarantees as it keeps state about the clients and supports selective acknowledgement and re-delivery. Redis is used for the result backend as result are looked up by key. Configuration for the task queue and result backend can be found in [celereconfig.py](celeryconfig.py).
+The system is built in Python and split into a web frontend and a backend of workers responsible for sending the emails. [Celery](http://www.celeryproject.org/) is used as a distributed task queue to send tasks and results between the frontend and backend. This architecture allows to scale the system as the number of workers can be scaled independent of the frontend and vice versa. RabbitMQ is used as the task queue as it provides good delivery guarantees as it keeps state about the clients and supports selective acknowledgement and re-delivery. Redis is used for the result backend as result are looked up by key. Configuration for the task queue and result backend can be found in [celereconfig.py](celeryconfig.py).
 
 The webservice is based on [Flask](http://flask.pocoo.org/docs/0.11/api/).
 
