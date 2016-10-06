@@ -4,6 +4,14 @@ This project implements a simple HTTP email service that delivers the emails via
 
 A very simple web interface is provided to make it easy to test the service, however the main usecase of this service is using the HTTP endpoint directly from another application.
 
+| Endpoint | Method | Description |
+| -------- | ------ | ----------- |
+| /email   | POST   | Enqueue email for delivery. Accepts both JSON body and form data. Required fields: to, subject, content. Optional fields: to_name |
+| /email/`<id>` | GET | Get the status of the email posted via /email |
+
+[Link to deployed service](http://emailservice.martindam.dk)
+
+
 ## Architecture
 
 
