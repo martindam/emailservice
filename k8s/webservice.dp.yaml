@@ -19,7 +19,7 @@ spec:
       containers:
       - name: app
         image: gcr.io/emailservice-144105/emailservice:0.1.0
-        command: ["/usr/local/bin/python", "webservice.py"]
+        command: ["/usr/local/bin/uwsgi", "--socket", "0.0.0.0:5000", "--protocol", "http", "-w", "webservice:app", "--workers", "5", "--master"]
         imagePullPolicy: Always
         env:
         - name: BROKER_URL
